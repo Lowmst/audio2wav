@@ -1,4 +1,5 @@
 # audio2wav
 
-Require: FFmpeg, C++23
+Require: FFmpeg
+
 Lossless audio support only.
