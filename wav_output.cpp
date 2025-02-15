@@ -2,7 +2,7 @@
 #include "ffmpeg.h"
 #include "wav.h"
 
-wav_output::wav_output(const char* filename, int sample_rate, int bits_per_sample)
+wav_output::wav_output(const wchar_t* filename, int sample_rate, int bits_per_sample)
 {
 	this->file.open(filename, std::ios::binary);
 	this->file.seekp(44, std::ios::beg);
@@ -121,19 +121,19 @@ void wav_output::write_planar(uint8_t** data, int format, int frame_nb_samples)
 	}
 	else
 	{
-		char* bytes = new char[2 * frame_nb_samples * this->bytes_per_sample];
+		this->bytes = new char[2 * frame_nb_samples * this->bytes_per_sample];
 		int shift = (bytes_per_data_sample - this->bytes_per_sample) * 8;
 
 		for (int i = 0; i < 2 * frame_nb_samples; i++)
 		{
 			for (int j = 0; j < this->bytes_per_sample; j++)
 			{
-				bytes[this->bytes_per_sample * i + j] = (char)((samples[i] >> (8 * j + shift)) & 0xFF);
+				this->bytes[this->bytes_per_sample * i + j] = (char)((samples[i] >> (8 * j + shift)) & 0xFF);
 			}
 		}
 
 		this->file.write(bytes, 2 * frame_nb_samples * this->bytes_per_sample);
-		delete[] bytes;
+		delete[] this->bytes;
 	}
 	delete[] samples;
 }

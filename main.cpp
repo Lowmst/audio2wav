@@ -1,4 +1,4 @@
-#include <chrono>
+ï»¿#include <chrono>
 #include <filesystem>
 #include <print>
 #include <vector>
@@ -21,7 +21,7 @@ int main()
 
 	//auto start = std::chrono::high_resolution_clock::now();
 
-	// ³õÊ¼»¯¸ñÊ½ÉÏÏÂÎÄ
+	// åˆå§‹åŒ–æ ¼å¼ä¸Šä¸‹æ–‡
 	AVFormatContext* fmt_ctx = avformat_alloc_context();
 
 	wchar_t* filename = argv[1];
@@ -30,17 +30,17 @@ int main()
 	WideCharToMultiByte(CP_UTF8, 0, filename, -1, utf8_filename, utf8_size, NULL, NULL);
 
 
-	// ´ò¿ªÎÄ¼ş²¢¶ÁÈ¡Á÷ĞÅÏ¢
+	// æ‰“å¼€æ–‡ä»¶å¹¶è¯»å–æµä¿¡æ¯
 	avformat_open_input(&fmt_ctx, utf8_filename, NULL, NULL);
 	avformat_find_stream_info(fmt_ctx, NULL);
 
-	std::println("ÈİÆ÷¸ñÊ½: {}", fmt_ctx->iformat->long_name);
-	std::println("¹ìµÀÊı: {}", fmt_ctx->nb_streams);
+	std::println("å®¹å™¨æ ¼å¼: {}", fmt_ctx->iformat->long_name);
+	std::println("è½¨é“æ•°: {}", fmt_ctx->nb_streams);
 
-	int audio_stream_index = 0; // ²éÕÒÒôÆµ¹ìµÀË÷Òı
+	int audio_stream_index = 0; // æŸ¥æ‰¾éŸ³é¢‘è½¨é“ç´¢å¼•
 	for (unsigned int i = 0; i < fmt_ctx->nb_streams; i++)
 	{
-		std::println("µÚ {} ¹ìÃ½ÌåÀàĞÍ: {} , ±àÂë¸ñÊ½: {}",
+		std::println("ç¬¬ {} è½¨åª’ä½“ç±»å‹: {} , ç¼–ç æ ¼å¼: {}",
 			i, av_get_media_type_string(fmt_ctx->streams[i]->codecpar->codec_type), avcodec_get_name(fmt_ctx->streams[i]->codecpar->codec_id));
 		if (fmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO)
 		{
@@ -48,53 +48,58 @@ int main()
 		}
 	}
 
-	// »ñÈ¡ÒôÆµ¹ìµÀµÄ±àÂë²ÎÊı
+	// è·å–éŸ³é¢‘è½¨é“çš„ç¼–ç å‚æ•°
 	AVCodecParameters* codecpar = fmt_ctx->streams[audio_stream_index]->codecpar;
-	std::println("ÒôÆµ¹ìÊ±¼ä»ù : {}/{} s", fmt_ctx->streams[audio_stream_index]->time_base.num, fmt_ctx->streams[audio_stream_index]->time_base.den);
-	std::println("ÒôÆµ¹ìÊ±¼ä»ùÊ±³¤ : {}", fmt_ctx->streams[audio_stream_index]->duration);
+	std::println("éŸ³é¢‘è½¨æ—¶é—´åŸº : {}/{} s", fmt_ctx->streams[audio_stream_index]->time_base.num, fmt_ctx->streams[audio_stream_index]->time_base.den);
+	std::println("éŸ³é¢‘è½¨æ—¶é—´åŸºæ—¶é•¿ : {}", fmt_ctx->streams[audio_stream_index]->duration);
 
-	std::println("ÒôÆµ¹ìÊ±³¤ : {} s", av_rescale_q(fmt_ctx->streams[audio_stream_index]->duration, fmt_ctx->streams[audio_stream_index]->time_base, { 1, 1 }));
-	std::println("ÒôÆµ¹ì²ÉÑùÂÊ : {} Hz", codecpar->sample_rate);
+	std::println("éŸ³é¢‘è½¨æ—¶é•¿ : {} s", av_rescale_q(fmt_ctx->streams[audio_stream_index]->duration, fmt_ctx->streams[audio_stream_index]->time_base, { 1, 1 }));
+	std::println("éŸ³é¢‘è½¨é‡‡æ ·ç‡ : {} Hz", codecpar->sample_rate);
 
 	int bits_per_sample = codecpar->bits_per_raw_sample ? codecpar->bits_per_raw_sample : codecpar->bits_per_coded_sample;
-	std::println("ÒôÆµ¹ìÎ»Éî : {} bit", bits_per_sample);
-	std::println("ÒôÆµ¹ìÉùµÀÊı : {}", codecpar->ch_layout.nb_channels);
+	std::println("éŸ³é¢‘è½¨ä½æ·± : {} bit", bits_per_sample);
+	std::println("éŸ³é¢‘è½¨å£°é“æ•° : {}", codecpar->ch_layout.nb_channels);
 
-	// ³õÊ¼»¯Êı¾İ°ü
+	// åˆå§‹åŒ–æ•°æ®åŒ…
 	AVPacket* pkt = av_packet_alloc();
 
-	// ²éÕÒ½âÂëÆ÷²¢³õÊ¼»¯½âÂëÆ÷ÉÏÏÂÎÄ
+	// æŸ¥æ‰¾è§£ç å™¨å¹¶åˆå§‹åŒ–è§£ç å™¨ä¸Šä¸‹æ–‡
 	const AVCodec* codec = avcodec_find_decoder(fmt_ctx->streams[audio_stream_index]->codecpar->codec_id);
 	AVCodecContext* avc_ctx = avcodec_alloc_context3(codec);
 
-	// ½«½âÂë²ÎÊıÓ¦ÓÃÓÚ½âÂëÆ÷
+	// å°†è§£ç å‚æ•°åº”ç”¨äºè§£ç å™¨
 	avcodec_parameters_to_context(avc_ctx, codecpar);
 	avcodec_open2(avc_ctx, codec, NULL);
 
-	// ³õÊ¼»¯Ö¡
+	// åˆå§‹åŒ–å¸§
 	AVFrame* frame = av_frame_alloc();
 
 	std::filesystem::path input_path(filename);
-	std::string output_filename = input_path.filename().stem().string() + ".wav";
-	std::println("PCM Ğ´Èë {}", output_filename);
+	std::wstring output_filename = input_path.filename().stem().wstring() + L".wav";
+	//std::println("PCM å†™å…¥ {}", output_filename);
+	//utf8_size = WideCharToMultiByte(CP_UTF8, 0, output_filename.c_str(), -1, NULL, 0, NULL, NULL);
+	//char* utf8_filename = (char*)malloc(utf8_size);
+	//WideCharToMultiByte(CP_UTF8, 0, filename, -1, utf8_filename, utf8_size, NULL, NULL);
 	wav_output wav(output_filename.c_str(), codecpar->sample_rate, bits_per_sample);
 
 	auto codec_start = std::chrono::high_resolution_clock::now();
-	while (av_read_frame(fmt_ctx, pkt) == 0) // Ñ­»·¶ÁÊı¾İ°ü
+	while (av_read_frame(fmt_ctx, pkt) == 0) // å¾ªç¯è¯»æ•°æ®åŒ…
 	{
 		if (pkt->stream_index == audio_stream_index)
 		{
 			avcodec_send_packet(avc_ctx, pkt);
 
-			while (avcodec_receive_frame(avc_ctx, frame) == 0) // ·¢ËÍµ¥¸öÊı¾İ°üºóÑ­»·È¡½âÂëºóÊı¾İ
+			while (avcodec_receive_frame(avc_ctx, frame) == 0) // å‘é€å•ä¸ªæ•°æ®åŒ…åå¾ªç¯å–è§£ç åæ•°æ®
 			{
 				wav.write_data(frame->data, frame->format, frame->nb_samples);
+				av_frame_unref(frame);
 			}
+			av_packet_unref(pkt);
 		}
 	}
 	wav.write_head();
 
-	// ×îºó·¢Ò»´Î¿Õ°ü // ÒôÆµÁ÷´ó¸ÅÂÊ²»ĞèÒª
+	// æœ€åå‘ä¸€æ¬¡ç©ºåŒ… // éŸ³é¢‘æµå¤§æ¦‚ç‡ä¸éœ€è¦
 	//int ret_send = avcodec_send_packet(avc_ctx, NULL);
 	//if (ret_send == 0) {
 	//	for (;;)

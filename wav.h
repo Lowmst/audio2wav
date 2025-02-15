@@ -30,7 +30,7 @@ typedef struct WAV_HEAD
 class wav_output
 {
 public:
-	wav_output(const char* filename, int sample_rate, int bits_per_sample);
+	wav_output(const wchar_t* filename, int sample_rate, int bits_per_sample);
 
 	void write_sample(int64_t sample_left, int64_t sample_right, int format);
 	void write_data(uint8_t** data, int format, int frame_nb_samples);
@@ -50,4 +50,6 @@ private:
 	int sample_rate;
 	int bits_per_sample;
 	int bytes_per_sample;
+
+	char* bytes;
 };
